@@ -1,0 +1,13 @@
+{
+  "name": "Japex Stock Requests",
+  "short_name": "Stock",
+  "start_url": "./#open",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f3f4",
+  "theme_color": "#ffffff",
+  "icons": [
+    { "src": "assets/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

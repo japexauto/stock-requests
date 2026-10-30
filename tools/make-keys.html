@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Alert Keys</title>
+  <style>
+    :root { --bg: #f3f3f4; --card: #fff; --text: #232721; --muted: #62646a; --line: #dcdcde; }
+    @media (prefers-color-scheme: dark) { :root { --bg: #141614; --card: #1f221f; --text: #ecedec; --muted: #a8a8a9; --line: #363a36; } }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    main { max-width: 640px; margin: 0 auto; padding: 16px; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+    textarea { width: 100%; font: 14px ui-monospace, Menlo, Consolas, monospace; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--text); }
+    button { font: inherit; font-weight: 600; min-height: 48px; padding: 0 18px; border-radius: 10px; border: 0; background: #232721; color: #fff; }
+    .muted { color: var(--muted); }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Make phone alert keys</h1>
+  <p>Do this once. The keys are made on this computer and aren't sent anywhere.</p>
+  <button id="go" type="button">Make keys</button>
+  <div id="out" hidden>
+    <div class="card">
+      <b>Public key</b>
+      <p class="muted">Goes in <code>config.js</code> as <code>vapidPublicKey</code>, and in Supabase secrets as <code>VAPID_PUBLIC_KEY</code>.</p>
+      <textarea id="pub" rows="3" readonly></textarea>
+    </div>
+    <div class="card">
+      <b>Private key</b>
+      <p class="muted">Goes ONLY in Supabase secrets as <code>VAPID_PRIVATE_KEY</code>. Don't put it in config.js or anywhere public.</p>
+      <textarea id="priv" rows="2" readonly></textarea>
+    </div>
+    <p class="muted">If you make new keys later, everyone has to turn alerts off and on again.</p>
+  </div>
+</main>
+<script>
+  const b64u = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  document.getElementById('go').addEventListener('click', async () => {
+    const pair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+    const pub = await crypto.subtle.exportKey('raw', pair.publicKey);
+    const jwk = await crypto.subtle.exportKey('jwk', pair.privateKey);
+    document.getElementById('pub').value = b64u(pub);
+    document.getElementById('priv').value = jwk.d;
+    document.getElementById('out').hidden = false;
+  });
+</script>
+</body>
+</html>

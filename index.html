@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <title>Stock Requests | Japex Automotive</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-title" content="Stock">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#request">
+      <img class="brand-mark" src="assets/logo-mark.png" alt="" width="34" height="40">
+      <h1><span class="brand-name"><span class="brand-j">Japex</span> Automotive</span>
+        <span class="brand-sub">Stock Requests</span></h1>
+    </a>
+    <div class="topbar-actions">
+      <button id="alertsBtn" class="text-btn" type="button" hidden>Alerts</button>
+      <button id="refreshBtn" class="icon-btn" type="button" aria-label="Refresh" hidden>&#x21bb;</button>
+    </div>
+  </header>
+
+  <div id="setupBanner" class="banner" hidden>Not set up yet: fill in config.js (see README).</div>
+  <div id="errorBanner" class="banner banner-error" role="alert" hidden></div>
+  <div id="toast" class="toast" role="status" hidden></div>
+
+  <!-- Login -->
+  <main id="loginView" class="view" hidden>
+    <form id="loginForm" class="panel login">
+      <img class="login-logo" src="assets/logo-full.png" alt="Japex Automotive" width="240" height="160">
+      <h2>Stock requests: staff sign in</h2>
+      <p class="muted small center">Same email and password as the courtesy cars app.</p>
+      <label>Email<input name="email" type="email" autocomplete="username" required></label>
+      <label>Password<input name="password" type="password" autocomplete="current-password" required></label>
+      <button class="btn btn-primary btn-block btn-big" type="submit">Sign in</button>
+      <p id="loginMsg" class="form-error"></p>
+    </form>
+  </main>
+
+  <!-- Main app -->
+  <main id="mainView" class="view" hidden>
+    <nav class="tabs" id="tabs">
+      <a class="tab" href="#request" data-tab="request">Request</a>
+      <a class="tab" href="#open" data-tab="open">Open <span id="openCount" class="count"></span></a>
+      <a class="tab" href="#history" data-tab="history">History</a>
+      <a class="tab" href="#items" data-tab="items" id="itemsTab" hidden>Items</a>
+    </nav>
+    <section id="content"></section>
+    <footer class="foot">
+      <span id="whoAmI" class="muted small"></span>
+      <button id="signOutBtn" class="btn-link" type="button">Sign out</button>
+    </footer>
+  </main>
+
+  <!-- Hidden camera input for photo requests -->
+  <input id="photoInput" type="file" accept="image/*" capture="environment" hidden>
+
+  <!-- Photo request -->
+  <dialog id="photoDialog">
+    <form id="photoForm" method="dialog" class="sheet">
+      <h2>No label? Send a photo</h2>
+      <img id="photoPreview" class="photo-preview" alt="Your photo">
+      <button id="retakeBtn" class="btn-link" type="button">Retake photo</button>
+      <label>Note (optional)<input name="note" maxlength="200" autocomplete="off" placeholder="e.g. blue roll, 2 left"></label>
+      <div class="big-actions">
+        <button class="btn btn-primary btn-huge" type="submit" value="normal">Send</button>
+        <button class="btn btn-urgent btn-huge" type="submit" value="urgent">Send as urgent</button>
+      </div>
+      <p class="form-error" data-error></p>
+      <div class="sheet-actions"><button class="btn" type="button" data-close>Cancel</button></div>
+    </form>
+  </dialog>
+
+  <!-- Mark ordered (managers) -->
+  <dialog id="orderDialog">
+    <form id="orderForm" method="dialog" class="sheet">
+      <h2 data-title>Mark ordered</h2>
+      <p class="muted" data-sub></p>
+      <label>Quantity ordered<input name="qty_ordered" maxlength="60" autocomplete="off"></label>
+      <p class="form-error" data-error></p>
+      <div class="sheet-actions">
+        <button class="btn" type="button" data-close>Cancel</button>
+        <button class="btn btn-primary btn-grow" type="submit">Mark ordered</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Add / edit item (managers) -->
+  <dialog id="itemDialog">
+    <form id="itemForm" method="dialog" class="sheet">
+      <h2 data-title>Add item</h2>
+      <label>Name<input name="name" required maxlength="80" autocomplete="off" placeholder="e.g. Engine oil"></label>
+      <div class="row">
+        <label>Size or grade<input name="size_grade" maxlength="40" autocomplete="off" placeholder="e.g. 5W-30, 205 L"></label>
+        <label>Usual order<input name="order_qty" maxlength="40" autocomplete="off" placeholder="e.g. 1 drum"></label>
+      </div>
+      <label>Supplier<input name="supplier" maxlength="60" autocomplete="off" list="supplierList"></label>
+      <datalist id="supplierList"></datalist>
+      <label>Notes (optional)<input name="notes" maxlength="200" autocomplete="off" placeholder="e.g. part number, where it's kept"></label>
+      <p class="form-error" data-error></p>
+      <div class="sheet-actions">
+        <button class="btn btn-danger" type="button" data-archive hidden>Remove</button>
+        <button class="btn" type="button" data-close>Cancel</button>
+        <button class="btn btn-primary" type="submit">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Phone alerts (managers) -->
+  <dialog id="alertsDialog">
+    <div class="sheet">
+      <h2>Phone alerts</h2>
+      <div id="alertsBody"></div>
+      <p class="form-error" data-error></p>
+      <div class="sheet-actions"><button class="btn" type="button" data-close>Close</button></div>
+    </div>
+  </dialog>
+
+  <!-- Big photo -->
+  <dialog id="bigPhotoDialog" class="photo-dialog">
+    <form method="dialog"><img id="bigPhoto" alt=""><button class="btn btn-block">Close</button></form>
+  </dialog>
+
+  <!-- Labels are built here for printing -->
+  <div id="printArea" aria-hidden="true"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
+  <script src="lib/qrcode.js"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

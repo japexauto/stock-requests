@@ -7,7 +7,7 @@ window.STOCK_CONFIG = {
 
   // The web address the QR labels point to. Set this BEFORE printing labels, and don't change it after,
   // or every label needs reprinting. Leave blank to use whatever address the app is opened on.
-  appUrl: '',
+  appUrl: 'https://japex-stock.netlify.app/',
 
   // Public key for phone alerts, made with tools/make-keys.html. Leave blank until you set up alerts.
   vapidPublicKey: ''
